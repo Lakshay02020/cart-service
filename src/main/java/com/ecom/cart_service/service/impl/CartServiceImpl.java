@@ -29,27 +29,33 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void addItem(String userId, Long cartId, CartItemDto cartItemDto) {
-        if (cartItemDto.getQuantity() <= 0) {
-            throw new IllegalArgumentException("Quantity must be greater than zero.");
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new IllegalArgumentException("User ID must not be null or empty.");
         }
 
-        Cart cart = new Cart();
-        List<CartItem> cartItems = new ArrayList<>();
+        Cart cart = cartRepository.findByUserId(userId);
 
-        if (cartId != null) {
-            Optional<Cart> cartOptional = cartRepository.findById(cartId);
-            if (cartOptional.isEmpty()) {
-                throw new IllegalArgumentException("Cart not found with ID: " + cartId);
-            }
-            cart = cartOptional.get();
-            cartItems = cart.getItems();
-        } else {
+        if (cart == null) {
+            cart = new Cart();
             cart.setUserId(userId);
         }
 
+        List<CartItem> items = cart.getItems();
+        addItem(items, cartItemDto, cart);
+        cartRepository.save(cart); // saves everything due to CascadeType.ALL
+    }
+
+
+    @Override
+    public CartDto getCartItems(String userId, Long cartId) {
+        Cart cart = cartRepository.findByUserId(userId);
+        return  CartMapper.toDto(cart);
+    }
+
+    public void addItem(List<CartItem> items, CartItemDto cartItemDto, Cart cart){
         boolean itemExists = false;
 
-        for (CartItem item : cartItems) {
+        for (CartItem item : items) {
             if (item.getProductId().equals(cartItemDto.getProductId())) {
                 item.setQuantity(item.getQuantity() + 1);
                 itemExists = true;
@@ -59,17 +65,7 @@ public class CartServiceImpl implements CartService {
 
         if (!itemExists) {
             CartItem newItem = CartItemMapper.toEntity(cartItemDto, cart);
-            cartItems.add(newItem);
+            items.add(newItem);
         }
-
-        cart.setItems(cartItems);
-        cartRepository.save(cart); // saves both cart and items due to cascade
     }
-
-    @Override
-    public CartDto getCartItems(String userId, Long cartId) {
-        Cart cart = cartRepository.findByUserId(userId);
-        return  CartMapper.toDto(cart);
-    }
-
 }

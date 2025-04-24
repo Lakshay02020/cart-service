@@ -25,6 +25,7 @@ public class CartMapper {
 
     public static CartDto toDto(Cart cart) {
         CartDto cartDto = new CartDto();
+        cartDto.setId(cart.getId());
         cartDto.setUserId(cart.getUserId());
         List<CartItemDto> cartItemDtos = new ArrayList<>();
 

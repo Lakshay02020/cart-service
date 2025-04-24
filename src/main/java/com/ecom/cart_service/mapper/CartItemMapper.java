@@ -19,6 +19,7 @@ public class CartItemMapper {
         cartItem.setId(dto.getId()); // usually set by DB, so can be skipped unless updating
         cartItem.setProductId(dto.getProductId());
         cartItem.setQuantity(dto.getQuantity());
+        cartItem.setPrice(dto.getPrice());
         cartItem.setCart(cart); // establish bidirectional link
         return cartItem;
     }

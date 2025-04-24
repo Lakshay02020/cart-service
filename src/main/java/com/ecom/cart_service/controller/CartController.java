@@ -20,9 +20,9 @@ public class CartController {
     private CartService cartService;
 
     @PostMapping("/{userId}/items")
-    public ResponseEntity<String> addItem(@PathVariable String userId, @PathVariable Long cartId, @RequestBody CartItemDto cartItemDto) {
-        log.info("Received request to add item {} for user {} with cart id {}", cartItemDto, userId, cartId);
-        cartService.addItem(userId, cartId, cartItemDto);
+    public ResponseEntity<String> addItem(@PathVariable String userId, @RequestBody CartItemDto cartItemDto) {
+        log.info("Received request to add item {} for user {}", cartItemDto, userId);
+        cartService.addItem(userId, 124L, cartItemDto);
         return new ResponseEntity<>("Item added to cart successfully", HttpStatus.CREATED);
     }
 

@@ -11,6 +11,7 @@ public class CartItemMapper {
         dto.setId(cartItem.getId());
         dto.setProductId(cartItem.getProductId());
         dto.setQuantity(cartItem.getQuantity());
+        dto.setPrice(cartItem.getPrice());
         return dto;
     }
 

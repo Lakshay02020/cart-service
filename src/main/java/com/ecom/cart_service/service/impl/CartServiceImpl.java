@@ -29,25 +29,34 @@ public class CartServiceImpl implements CartService {
 
     public void addItem(String userId, CartItemDto cartItemDto) {
         // 1. Fetch or create a cart for the user
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseGet(() -> {
-                    Cart newCart = new Cart();
-                    newCart.setUserId(userId);
-                    return cartRepository.save(newCart);
-                });
-
+        Cart cart = loadCart(userId);
         log.info("Cart : {} ", cart.getUserId());
-        // 2. Create CartItem (ignore incoming ID)
-        CartItem cartItem = new CartItem();
-        cartItem.setProductId(cartItemDto.getProductId());
-        cartItem.setQuantity(cartItemDto.getQuantity());
-        cartItem.setPrice(cartItemDto.getPrice());
-        cartItem.setCart(cart); // Link cart
 
-        log.info("Cart Item Set");
-        // 3. Save CartItem and update cart
-        cartItemRepository.save(cartItem);
-        cart.getItems().add(cartItem); // optional
+        // 2. Check if an item with the same productId already exists
+        Optional<CartItem> existingItemOpt = cart.getItems()
+                .stream()
+                .filter(item -> item.getProductId().equals(cartItemDto.getProductId()))
+                .findFirst();
+
+        if (existingItemOpt.isPresent()) {
+            // 3. If item exists, increment the quantity
+            CartItem existingItem = existingItemOpt.get();
+            existingItem.setQuantity(existingItem.getQuantity() + cartItemDto.getQuantity());
+            cartItemRepository.save(existingItem);
+            log.info("Updated quantity of existing cart item");
+        } else {
+            // 4. Otherwise, create a new CartItem
+            CartItem cartItem = new CartItem();
+            cartItem.setProductId(cartItemDto.getProductId());
+            cartItem.setQuantity(cartItemDto.getQuantity());
+            cartItem.setPrice(cartItemDto.getPrice());
+            cartItem.setCart(cart); // Link cart
+
+            cartItemRepository.save(cartItem);
+            cart.getItems().add(cartItem); // Optional, if not using cascade
+            log.info("New cart item added");
+        }
+
         cartRepository.save(cart);     // optional if cascade works
     }
 
@@ -57,4 +66,12 @@ public class CartServiceImpl implements CartService {
         return  CartMapper.toDto(cart.get());
     }
 
+    public Cart loadCart(String userId){
+        return cartRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    Cart newCart = new Cart();
+                    newCart.setUserId(userId);
+                    return cartRepository.save(newCart);
+                });
+    }
 }

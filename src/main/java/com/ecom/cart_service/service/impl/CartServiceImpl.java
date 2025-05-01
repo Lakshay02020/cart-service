@@ -27,45 +27,34 @@ public class CartServiceImpl implements CartService {
     @Autowired
     CartItemRepository cartItemRepository;
 
-    @Override
-    public void addItem(String userId, Long cartId, CartItemDto cartItemDto) {
-        if (userId == null || userId.trim().isEmpty()) {
-            throw new IllegalArgumentException("User ID must not be null or empty.");
-        }
+    public void addItem(String userId, CartItemDto cartItemDto) {
+        // 1. Fetch or create a cart for the user
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    Cart newCart = new Cart();
+                    newCart.setUserId(userId);
+                    return cartRepository.save(newCart);
+                });
 
-        Cart cart = cartRepository.findByUserId(userId);
+        log.info("Cart : {} ", cart.getUserId());
+        // 2. Create CartItem (ignore incoming ID)
+        CartItem cartItem = new CartItem();
+        cartItem.setProductId(cartItemDto.getProductId());
+        cartItem.setQuantity(cartItemDto.getQuantity());
+        cartItem.setPrice(cartItemDto.getPrice());
+        cartItem.setCart(cart); // Link cart
 
-        if (cart == null) {
-            cart = new Cart();
-            cart.setUserId(userId);
-        }
-
-        List<CartItem> items = cart.getItems();
-        addItem(items, cartItemDto, cart);
-        cartRepository.save(cart); // saves everything due to CascadeType.ALL
+        log.info("Cart Item Set");
+        // 3. Save CartItem and update cart
+        cartItemRepository.save(cartItem);
+        cart.getItems().add(cartItem); // optional
+        cartRepository.save(cart);     // optional if cascade works
     }
-
 
     @Override
     public CartDto getCartItems(String userId, Long cartId) {
-        Cart cart = cartRepository.findByUserId(userId);
-        return  CartMapper.toDto(cart);
+        Optional<Cart> cart = cartRepository.findByUserId(userId);
+        return  CartMapper.toDto(cart.get());
     }
 
-    public void addItem(List<CartItem> items, CartItemDto cartItemDto, Cart cart){
-        boolean itemExists = false;
-
-        for (CartItem item : items) {
-            if (item.getProductId().equals(cartItemDto.getProductId())) {
-                item.setQuantity(item.getQuantity() + 1);
-                itemExists = true;
-                break;
-            }
-        }
-
-        if (!itemExists) {
-            CartItem newItem = CartItemMapper.toEntity(cartItemDto, cart);
-            items.add(newItem);
-        }
-    }
 }

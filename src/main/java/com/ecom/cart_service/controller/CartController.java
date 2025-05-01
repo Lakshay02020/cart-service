@@ -56,10 +56,10 @@ public class CartController {
 //        }
 //    }
 //
-//    @DeleteMapping("/{userId}")
-//    public ResponseEntity<String> clearCart(@PathVariable String userId) {
-//        logger.info("Received request to clear cart for user {}", userId);
-//        cartService.clearCart(userId);
-//        return new ResponseEntity<>("Cart cleared successfully", HttpStatus.OK);
-//    }
+    @DeleteMapping("/clearItems/{userId}")
+    public ResponseEntity<String> clearCart(@PathVariable String userId) {
+        log.info("Received request to clear cart for user {}", userId);
+        cartService.clearCart(userId);
+        return new ResponseEntity<>("Cart cleared successfully", HttpStatus.OK);
+    }
 }

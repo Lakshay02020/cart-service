@@ -12,6 +12,7 @@ import com.ecom.cart_service.service.CartService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +65,18 @@ public class CartServiceImpl implements CartService {
     public CartDto getCartItems(String userId, Long cartId) {
         Optional<Cart> cart = cartRepository.findByUserId(userId);
         return  CartMapper.toDto(cart.get());
+    }
+
+    @Transactional
+    @Override
+    public void clearCart(String userId) {
+        try {
+            Optional<Cart> cart = cartRepository.findByUserId(userId);
+            cart.ifPresent(value -> cartItemRepository.deleteAllByCartId(cart.get().getId()));
+        } catch (Exception e) {
+            log.error("Error clearing cart for userId {}: {}", userId, e.getMessage(), e);
+            throw new RuntimeException("Failed to clear cart for userId: " + userId, e);
+        }
     }
 
     public Cart loadCart(String userId){

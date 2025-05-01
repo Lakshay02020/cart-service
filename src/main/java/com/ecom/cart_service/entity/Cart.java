@@ -20,6 +20,6 @@ public class Cart {
 
     private String userId; // or UUID depending on your system
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.MERGE, orphanRemoval = true)
     private List<CartItem> items = new ArrayList<>();
 }

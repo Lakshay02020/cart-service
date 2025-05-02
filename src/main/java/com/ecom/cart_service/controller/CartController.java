@@ -20,10 +20,10 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
-    @PostMapping("/{userId}/items")
-    public ResponseEntity<String> addItem(@PathVariable String userId, @RequestBody CartItemDto cartItemDto) {
-        log.info("Received request to add item {} for user {}", cartItemDto, userId);
-        cartService.addItem(userId, cartItemDto);
+    @PostMapping("/{userId}/updateQuantity/{productId}")
+    public ResponseEntity<String> updateItemQuantity(@PathVariable String userId, @PathVariable String productId, @RequestParam int quantity) {
+        log.info("Received request to add item with product id {} to increase/decrease by {} for user {}", productId, quantity, userId);
+        cartService.updateItemQuantity(userId, productId, quantity);
         return new ResponseEntity<String>("Item added to cart successfully", HttpStatus.OK);
     }
 

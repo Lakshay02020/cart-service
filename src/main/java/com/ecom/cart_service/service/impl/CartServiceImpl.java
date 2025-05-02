@@ -28,37 +28,45 @@ public class CartServiceImpl implements CartService {
     @Autowired
     CartItemRepository cartItemRepository;
 
-    public void addItem(String userId, CartItemDto cartItemDto) {
-        // 1. Fetch or create a cart for the user
+    public void updateItemQuantity(String userId, String productId, int quantity) {
         Cart cart = loadCart(userId);
-        log.info("Cart : {} ", cart.getUserId());
+        log.info("Cart : {}", cart.getUserId());
 
-        // 2. Check if an item with the same productId already exists
         Optional<CartItem> existingItemOpt = cart.getItems()
                 .stream()
-                .filter(item -> item.getProductId().equals(cartItemDto.getProductId()))
+                .filter(item -> item.getProductId().equals(productId))
                 .findFirst();
 
         if (existingItemOpt.isPresent()) {
-            // 3. If item exists, increment the quantity
             CartItem existingItem = existingItemOpt.get();
-            existingItem.setQuantity(existingItem.getQuantity() + cartItemDto.getQuantity());
-            cartItemRepository.save(existingItem);
-            log.info("Updated quantity of existing cart item");
-        } else {
-            // 4. Otherwise, create a new CartItem
-            CartItem cartItem = new CartItem();
-            cartItem.setProductId(cartItemDto.getProductId());
-            cartItem.setQuantity(cartItemDto.getQuantity());
-            cartItem.setPrice(cartItemDto.getPrice());
-            cartItem.setCart(cart); // Link cart
+            int updatedQuantity = existingItem.getQuantity() + quantity;
 
-            cartItemRepository.save(cartItem);
-            cart.getItems().add(cartItem); // Optional, if not using cascade
-            log.info("New cart item added");
+            if (updatedQuantity <= 0) {
+                cart.getItems().remove(existingItem);
+                cartItemRepository.delete(existingItem);
+                log.info("Removed item from cart as updated quantity <= 0");
+            } else {
+                existingItem.setQuantity(updatedQuantity);
+                cartItemRepository.save(existingItem);
+                log.info("Updated quantity of existing cart item to {}", updatedQuantity);
+            }
+        } else {
+            if (quantity > 0) {
+                CartItem cartItem = new CartItem();
+                cartItem.setProductId(productId);
+                cartItem.setQuantity(quantity);
+                cartItem.setPrice(0.0); // TODO: Replace with actual price logic if needed
+                cartItem.setCart(cart);
+
+                cartItemRepository.save(cartItem);
+                cart.getItems().add(cartItem);
+                log.info("New cart item added");
+            } else {
+                log.warn("Ignoring negative quantity for non-existent item");
+            }
         }
 
-        cartRepository.save(cart);     // optional if cascade works
+        cartRepository.save(cart); // Optional if cascade works
     }
 
     @Override

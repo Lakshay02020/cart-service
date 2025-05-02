@@ -6,7 +6,7 @@ import com.ecom.cart_service.dto.CartItemDto;
 import java.util.List;
 
 public interface CartService {
-    void addItem(String userId, CartItemDto cartItemDto);
+    void updateItemQuantity(String userId, String productId, int quantity);
     CartDto getCartItems(String userId, Long cartId);
     void clearCart(String userId);
 }

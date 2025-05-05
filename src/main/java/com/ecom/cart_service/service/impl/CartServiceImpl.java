@@ -4,6 +4,7 @@ import com.ecom.cart_service.dto.CartDto;
 import com.ecom.cart_service.dto.CartItemDto;
 import com.ecom.cart_service.entity.Cart;
 import com.ecom.cart_service.entity.CartItem;
+import com.ecom.cart_service.feign.ProductFeignProvider;
 import com.ecom.cart_service.mapper.CartItemMapper;
 import com.ecom.cart_service.mapper.CartMapper;
 import com.ecom.cart_service.repository.CartItemRepository;
@@ -27,6 +28,9 @@ public class CartServiceImpl implements CartService {
 
     @Autowired
     CartItemRepository cartItemRepository;
+
+    @Autowired
+    ProductFeignProvider productFeignProvider;
 
     public void updateItemQuantity(String userId, String productId, int quantity) {
         Cart cart = loadCart(userId);
@@ -55,7 +59,9 @@ public class CartServiceImpl implements CartService {
                 CartItem cartItem = new CartItem();
                 cartItem.setProductId(productId);
                 cartItem.setQuantity(quantity);
-                cartItem.setPrice(0.0); // TODO: Replace with actual price logic if needed
+                Double price = productFeignProvider.getProductById(Long.valueOf(productId)).getBody().getPrice();
+                log.info("Setting up price: {}" , price);
+                cartItem.setPrice(price); // TODO: Replace with actual price logic if needed
                 cartItem.setCart(cart);
 
                 cartItemRepository.save(cartItem);

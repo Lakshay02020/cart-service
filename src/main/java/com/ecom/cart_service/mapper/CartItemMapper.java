@@ -3,8 +3,13 @@ package com.ecom.cart_service.mapper;
 import com.ecom.cart_service.dto.CartItemDto;
 import com.ecom.cart_service.entity.Cart;
 import com.ecom.cart_service.entity.CartItem;
+import com.ecom.cart_service.feign.ProductFeignProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class CartItemMapper {
+
+    @Autowired
+    ProductFeignProvider productFeignProvider;
 
     public static CartItemDto toDto(CartItem cartItem) {
         CartItemDto dto = new CartItemDto();

@@ -2,6 +2,7 @@ package com.ecom.cart_service.service.impl;
 
 import com.ecom.cart_service.dto.CartDto;
 import com.ecom.cart_service.dto.CartItemDto;
+import com.ecom.cart_service.dto.ProductDto;
 import com.ecom.cart_service.entity.Cart;
 import com.ecom.cart_service.entity.CartItem;
 import com.ecom.cart_service.feign.ProductFeignProvider;
@@ -78,7 +79,26 @@ public class CartServiceImpl implements CartService {
     @Override
     public CartDto getCartItems(String userId, Long cartId) {
         Optional<Cart> cart = cartRepository.findByUserId(userId);
-        return  CartMapper.toDto(cart.get());
+
+        if(cart.isEmpty())
+            return null;
+
+        CartDto cartDto = CartMapper.toDto(cart.get());
+
+        List<CartItemDto> cartItemDtos = new ArrayList<>();
+
+        for (CartItem cartItem : cart.get().getItems()) {
+            CartItemDto cartItemDto = CartItemMapper.toDto(cartItem);
+            ProductDto productDto = productFeignProvider.getProductById(Long.valueOf(cartItem.getProductId())).getBody();
+            if(productDto != null) {
+                cartItemDto.setName(productDto.getName());
+                cartItemDto.setDescription(productDto.getDescription());
+            }
+            cartItemDtos.add(cartItemDto);
+        }
+
+        cartDto.setCartItems(cartItemDtos);
+        return cartDto;
     }
 
     @Transactional

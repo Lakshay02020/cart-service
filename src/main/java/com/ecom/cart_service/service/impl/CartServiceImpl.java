@@ -77,10 +77,10 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartDto getCartItems(String userId, Long cartId) {
+    public CartDto getCartItems(String userId) {
         Optional<Cart> cart = cartRepository.findByUserId(userId);
 
-        if(cart.isEmpty())
+        if(cart.isEmpty() || cart.get().getItems() == null)
             return null;
 
         CartDto cartDto = CartMapper.toDto(cart.get());
@@ -114,11 +114,16 @@ public class CartServiceImpl implements CartService {
     }
 
     public Cart loadCart(String userId){
-        return cartRepository.findByUserId(userId)
-                .orElseGet(() -> {
-                    Cart newCart = new Cart();
-                    newCart.setUserId(userId);
-                    return cartRepository.save(newCart);
-                });
+        log.info("Find cart from cartRepo with userId: {}", userId);
+        Optional<Cart> cart = cartRepository.findByUserId(userId);
+
+        if(cart.isEmpty()){
+                Cart newCart = new Cart();
+                newCart.setUserId(userId);
+                log.info("New Cart Created for user with userId : {}", userId);
+                return cartRepository.save(newCart);
+        }
+
+        return cart.get();
     }
 }

@@ -30,7 +30,7 @@ public class CartController {
     @GetMapping("/{userId}")
     public ResponseEntity<CartDto> getCart(@PathVariable String userId) {
         log.info("Received request to fetch cart for user {}", userId);
-        CartDto cartDto = cartService.getCartItems(userId, 124L);
+        CartDto cartDto = cartService.getCartItems(userId);
         return new ResponseEntity<>(cartDto, HttpStatus.OK);
     }
 

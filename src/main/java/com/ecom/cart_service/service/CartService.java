@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface CartService {
     void updateItemQuantity(String userId, String productId, int quantity);
-    CartDto getCartItems(String userId, Long cartId);
+    CartDto getCartItems(String userId);
     void clearCart(String userId);
 }

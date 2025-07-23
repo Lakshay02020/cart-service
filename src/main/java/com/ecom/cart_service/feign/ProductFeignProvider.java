@@ -12,4 +12,7 @@ public interface ProductFeignProvider {
 
     @GetMapping("/api/products/{id}")
     ResponseEntity<ProductDto> getProductById(@PathVariable("id") Long id);
+
+    @GetMapping("/api/products/ping")
+    void ping();
 }

@@ -20,6 +20,12 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
+    // Wake up cart service
+    @GetMapping("/ping")
+    public void ping(){
+        log.info("Ping received");
+    }
+
     @PostMapping("/{userId}/updateQuantity/{productId}")
     public ResponseEntity<String> updateItemQuantity(@PathVariable String userId, @PathVariable String productId, @RequestParam int quantity) {
         log.info("Received request to add item with product id {} to increase/decrease by {} for user {}", productId, quantity, userId);
